@@ -44,32 +44,48 @@ const getPrimaryButton = () => {
   let wasWrong = false
 
   for (const button of buttons.children) {
+    // Match the try again button
     if (button.textContent?.includes('Prøv igjen')) {
       tryAgainButton = button
     }
 
+    // Match the see solution button. If it exists, the user was wrong.
     if (button.textContent?.includes('Vis fasit')) {
       wasWrong = true
     }
 
+    // Match the next button (primary button)
     if (button.classList.contains('r4-button--primary')) {
       primaryButton = button
     }
   }
 
+  // If no lesson navigation buttons are found, return null. This is the case
+  // when the user has not started typing or making selections yet.
+  if (!primaryButton && !tryAgainButton && !wasWrong) {
+    return null
+  }
+
+  // If the user was wrong, return the try again button if it exists, otherwise
+  // return the primary button
   if (wasWrong) {
     return tryAgainButton ?? primaryButton
   }
 
+  // If the user was right, return the primary button if it exists.
   if (primaryButton) {
     return primaryButton
   }
+
+  // If there is no primary button, return the next or summary button for the
+  // chapter
 
   const lessonNavButtons = document.querySelectorAll(
     '.r4-lesson-navigation-bottom button'
   )
 
   for (const button of lessonNavButtons) {
+    // If the button is the next or summary button for the chapter, return it
     if (
       button.textContent?.includes('Neste') ||
       button.textContent?.includes('Oppsummering')
@@ -81,7 +97,9 @@ const getPrimaryButton = () => {
   return null
 }
 
-const mainContainerObserver = new MutationObserver(applyHooks)
+const mainContainerObserver = new MutationObserver(() =>
+  requestAnimationFrame(applyHooks)
+)
 const mainContainerObserverConfig = { childList: true, subtree: true }
 
 // Wait for the main container to be added to the app. When it is, start
