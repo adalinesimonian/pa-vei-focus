@@ -1,0 +1,26 @@
+{
+  "manifest_version": 2,
+  "name": "På Vei - Input Focus Improvements",
+  "version": "1.0.0",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "108.0"
+    }
+  },
+
+  "description": "Improves the focus handling of input fields on the På Vei website.",
+  "icons": {
+    "48": "icon.svg"
+  },
+
+  "permissions": ["https://pavei.cappelendamm.no/*"],
+
+  "content_scripts": [
+    {
+      "matches": ["https://pavei.cappelendamm.no/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
