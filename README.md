@@ -1,6 +1,6 @@
 # På Vei - Input Focus Improvements
 
-This is a small extension that improves the input focus behaviour in lessons on the [På Vei](https://pavei.cappelendamm.no/) website.
+This is a small extension that improves the input focus behaviour in lessons on the [På Vei](https://pavei.cappelendamm.no/) website and other Cappelen Damm courses (such as [Stein på Stein](https://steinpastein.cappelendamm.no/) and [Her på Berget](https://herpaberget.cappelendamm.no/)).
 
 ## Improvements
 

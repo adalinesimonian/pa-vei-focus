@@ -1,24 +1,25 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "På Vei - Input Focus Improvements",
-  "version": "1.0.1",
+  "version": "1.1.0",
 
   "browser_specific_settings": {
     "gecko": {
-      "strict_min_version": "108.0"
+      "id": "{7c384cf6-134b-4625-98b0-1ae4428c71e0}",
+      "strict_min_version": "120.0"
     }
   },
 
-  "description": "Improves the focus handling of input fields on the På Vei website.",
+  "description": "Improves the focus handling of input fields on the På Vei and other Cappelen Damm course websites.",
   "icons": {
     "48": "icon.svg"
   },
 
-  "permissions": ["https://pavei.cappelendamm.no/*"],
+  "host_permissions": ["https://*.cappelendamm.no/*"],
 
   "content_scripts": [
     {
-      "matches": ["https://pavei.cappelendamm.no/*"],
+      "matches": ["https://*.cappelendamm.no/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

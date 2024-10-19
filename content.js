@@ -14,6 +14,61 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Check for ?debug or debug=true in the query string to enable debug mode
+const debugMode = new URLSearchParams(window.location.search).has('debug')
+
+let logElement = null
+
+if (debugMode) {
+  logElement = document.createElement('pre')
+
+  // Display at bottom right of the screen
+  logElement.style.display = 'block'
+  logElement.style.padding = '1em'
+  logElement.style.position = 'fixed'
+  logElement.style.bottom = '0'
+  logElement.style.right = '0'
+  logElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+  logElement.style.color = 'white'
+  logElement.style.fontFamily = 'monospace'
+  logElement.style.zIndex = '999999'
+  logElement.style.maxHeight = '10vh'
+  logElement.style.overflow = 'auto'
+  logElement.style.width = '30vw'
+  logElement.style.boxSizing = 'border-box'
+
+  document.body.appendChild(logElement)
+}
+
+const log = !debugMode
+  ? console.debug
+  : (...args) => {
+      console.debug(...args)
+
+      logElement.textContent +=
+        args
+          .map(arg => {
+            if (typeof arg === 'string') {
+              return arg
+            }
+
+            return JSON.stringify(arg, null, 2)
+          })
+          .join(' ') + '\n'
+
+      // Scroll to the bottom of the log element if the user has not scrolled up
+      // Allow a margin of 10px
+      const margin = 10
+      const scrollBottom = logElement.scrollHeight - logElement.clientHeight
+      const scrollPosition = logElement.scrollTop + logElement.clientHeight
+
+      if (scrollBottom - scrollPosition <= margin) {
+        logElement.scrollTop = logElement.scrollHeight
+      }
+    }
+
+log('debug mode enabled')
+
 const getMainContainer = () => document.querySelector('app-main-app main')
 
 const getLessonElement = () =>
@@ -36,6 +91,7 @@ const getPrimaryButton = () => {
   const buttons = document.querySelector('.r4-exercise-footer__buttons')
 
   if (!buttons) {
+    log('no buttons found')
     return null
   }
 
@@ -46,16 +102,19 @@ const getPrimaryButton = () => {
   for (const button of buttons.children) {
     // Match the try again button
     if (button.textContent?.includes('Prøv igjen')) {
+      log('found try again button')
       tryAgainButton = button
     }
 
     // Match the see solution button. If it exists, the user was wrong.
     if (button.textContent?.includes('Vis fasit')) {
+      log('found see solution button')
       wasWrong = true
     }
 
     // Match the next button (primary button)
     if (button.classList.contains('r4-button--primary')) {
+      log('found primary button')
       primaryButton = button
     }
   }
@@ -63,17 +122,20 @@ const getPrimaryButton = () => {
   // If no lesson navigation buttons are found, return null. This is the case
   // when the user has not started typing or making selections yet.
   if (!primaryButton && !tryAgainButton && !wasWrong) {
+    log('no buttons found')
     return null
   }
 
   // If the user was wrong, return the try again button if it exists, otherwise
   // return the primary button
   if (wasWrong) {
+    log('user was wrong, returning try again button/primary button')
     return tryAgainButton ?? primaryButton
   }
 
   // If the user was right, return the primary button if it exists.
   if (primaryButton) {
+    log('user was right, returning primary button')
     return primaryButton
   }
 
@@ -90,10 +152,13 @@ const getPrimaryButton = () => {
       button.textContent?.includes('Neste') ||
       button.textContent?.includes('Oppsummering')
     ) {
+      log('found next/summary button')
+
       return button
     }
   }
 
+  log('no primary button found')
   return null
 }
 
@@ -114,10 +179,35 @@ const waitForMainContainer = () => {
     return
   }
 
+  log('main container found')
+
   mainContainerObserver.observe(mainContainer, mainContainerObserverConfig)
 }
 
-waitForMainContainer()
+// Check if the current page is a lesson page
+if (document.querySelector('script[src*="vgnoa"][src*="runtime"]')) {
+  log('lesson page detected')
+  waitForMainContainer()
+
+  // Add event listener for the enter key to click the primary button
+  document.addEventListener('keydown', e => {
+    // Don't run if a button or a link is focused
+    if (
+      document.activeElement?.tagName === 'BUTTON' ||
+      (document.activeElement?.tagName === 'A' && document.activeElement?.href)
+    ) {
+      return
+    }
+
+    if (e.key === 'Enter') {
+      getPrimaryButton()?.click?.()
+    }
+  })
+
+  log('init extension')
+} else {
+  log('not a lesson page')
+}
 
 let lastLesson = null
 let lastFocusable = null
@@ -152,28 +242,13 @@ function applyHooks() {
 
     // If the element is disabled, focus the primary button instead
     if (focusable.disabled) {
+      log('focusable is disabled, focusing primary button')
       getPrimaryButton()?.focus?.()
 
       return
     }
 
+    log(`focusing focusable element: ${focusable.tagName}`, focusable)
     focusable.focus()
   }
 }
-
-// Add event listener for the enter key to click the primary button
-document.addEventListener('keydown', e => {
-  // Don't run if a button or a link is focused
-  if (
-    document.activeElement?.tagName === 'BUTTON' ||
-    (document.activeElement?.tagName === 'A' && document.activeElement?.href)
-  ) {
-    return
-  }
-
-  if (e.key === 'Enter') {
-    getPrimaryButton()?.click?.()
-  }
-})
-
-console.debug('init extension')
